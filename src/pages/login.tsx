@@ -3,24 +3,52 @@ import { useAuth } from '@/contexts/auth-context';
 import { AuthLayout } from '@/components/layout/auth-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export function LoginPage() {
-  const { login, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(email, password);
+    setError('');
+
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Invalid email or password');
+    }
   };
 
   return (
-    <AuthLayout 
-      title="Sign in to your account" 
-      subtitle="Or start your 14-day free trial"
+    <AuthLayout
+      title="Sign in to your account"
+      subtitle="Start creating beautiful forms"
+      footer={
+        <div>
+          Don't have an account?{' '}
+          <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+            Sign up
+          </Link>
+        </div>
+      }
     >
       <form className="space-y-6" onSubmit={handleSubmit}>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             Email address
@@ -34,7 +62,6 @@ export function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full"
             />
           </div>
         </div>
@@ -52,7 +79,6 @@ export function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full"
             />
           </div>
         </div>
@@ -63,7 +89,7 @@ export function LoginPage() {
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
               Remember me
@@ -71,18 +97,14 @@ export function LoginPage() {
           </div>
 
           <div className="text-sm">
-            <a href="#" className="font-medium text-primary hover:text-primary-700">
+            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
               Forgot your password?
             </a>
           </div>
         </div>
 
         <div>
-          <Button
-            type="submit"
-            className="w-full"
-            isLoading={isLoading}
-          >
+          <Button type="submit" className="w-full" isLoading={isLoading}>
             Sign in
           </Button>
         </div>
@@ -103,11 +125,20 @@ export function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
+              onClick={() => {
+                // Demo: Just use the regular login
+                login('demo@formflow.com', 'password');
+                navigate('/dashboard');
+              }}
             >
-              <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12.0003 2C6.47731 2 2.00031 6.477 2.00031 12C2.00031 16.991 5.65731 21.128 10.4383 21.879V14.89H7.89831V12H10.4383V9.797C10.4383 7.291 11.9313 5.907 14.2153 5.907C15.3103 5.907 16.4543 6.102 16.4543 6.102V8.562H15.1923C13.9503 8.562 13.5623 9.333 13.5623 10.124V12H16.3363L15.8933 14.89H13.5623V21.879C18.3433 21.129 22.0003 16.99 22.0003 12C22.0003 6.477 17.5233 2 12.0003 2Z" />
+              <span className="sr-only">Sign in with Google</span>
+              <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                <path
+                  d="M12.545 10.239v3.821h5.445c-.712 2.315-2.647 3.972-5.445 3.972a6.033 6.033 0 110-12.064c1.498 0 2.866.549 3.921 1.453l2.814-2.814A9.969 9.969 0 0012.545 2C7.021 2 2.543 6.477 2.543 12s4.478 10 10.002 10c8.396 0 10.249-7.85 9.426-11.748l-9.426-.013z"
+                  fill="currentColor"
+                />
               </svg>
-              Facebook
+              Google
             </Button>
           </div>
 
@@ -115,23 +146,23 @@ export function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
+              onClick={() => {
+                // Demo: Just use the regular login
+                login('demo@formflow.com', 'password');
+                navigate('/dashboard');
+              }}
             >
-              <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12.0003 2C6.47731 2 2.00031 6.477 2.00031 12C2.00031 17.523 6.47731 22 12.0003 22C17.5233 22 22.0003 17.523 22.0003 12C22.0003 6.477 17.5233 2 12.0003 2ZM16.9503 9.8H14.0703C13.9303 9.17 13.7403 8.54 13.5003 7.92C14.2803 7.43 14.9403 6.73 15.4003 5.82C16.4403 6.74 17.2303 7.95 17.6103 9.33C17.4003 9.53 17.1803 9.68 16.9503 9.8ZM12.0003 4C12.9303 4 13.8303 4.19 14.6503 4.54C14.3303 5.19 13.8403 5.73 13.2403 6.13C12.9403 5.43 12.5903 4.75 12.2003 4.09C12.1303 4.06 12.0703 4.03 12.0003 4ZM7.47031 7.5C8.02031 8.07 8.70031 8.5 9.44031 8.74C9.74031 9.42 9.98031 10.16 10.1603 10.94H6.05031C6.16031 9.72 6.69031 8.6 7.47031 7.5ZM4.00031 12C4.00031 11.72 4.02031 11.44 4.06031 11.17H10.4503C10.4003 11.5 10.3603 11.84 10.3603 12.19C10.3603 12.59 10.4003 12.97 10.4703 13.34H4.11031C4.04031 12.9 4.00031 12.45 4.00031 12ZM7.47031 16.5C6.72031 15.45 6.20031 14.18 6.07031 12.83H10.5903C10.5003 13.27 10.3603 13.69 10.1803 14.08C9.40031 14.25 8.65031 14.61 8.00031 15.13C7.81031 15.27 7.63031 15.38 7.47031 16.5ZM12.0003 20C11.0603 20 10.1603 19.81 9.33031 19.46C9.53031 19.07 9.77031 18.71 10.0403 18.38C10.6903 17.73 11.4603 17.3 12.2903 17.09C12.5603 17.73 12.8603 18.36 13.1903 18.95C12.8003 19 12.4003 20 12.0003 20ZM15.5803 15.56C15.0003 15.15 14.3603 14.84 13.6903 14.66C13.4903 14.24 13.3303 13.79 13.2103 13.32H17.8903C17.7803 14.25 17.4603 15.12 17.0003 15.9C16.5703 15.78 16.0703 15.68 15.5803 15.56ZM13.0903 12.19C13.0903 11.92 13.1103 11.65 13.1503 11.39H17.9403C17.9803 11.59 18.0003 11.79 18.0003 12C18.0003 12.38 17.9703 12.74 17.9103 13.1H13.2003C13.1303 12.8 13.0903 12.5 13.0903 12.19Z" />
+              <span className="sr-only">Sign in with GitHub</span>
+              <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.933.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"
+                  fill="currentColor"
+                />
               </svg>
-              Google
+              GitHub
             </Button>
           </div>
         </div>
-      </div>
-
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/signup" className="font-medium text-primary hover:text-primary-700">
-            Sign up
-          </Link>
-        </p>
       </div>
     </AuthLayout>
   );

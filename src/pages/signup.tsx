@@ -1,36 +1,53 @@
-import { useState } from "react";
-import { useAuth } from "@/contexts/auth-context";
-import { AuthLayout } from "@/components/layout/auth-layout";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useAuth } from '@/contexts/auth-context';
+import { AuthLayout } from '@/components/layout/auth-layout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Link, useNavigate } from 'react-router-dom';
 
 export function SignupPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const { signup, isLoading } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
-    if (!name || !email || !password) {
-      setError("All fields are required");
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
     try {
       await signup(name, email, password);
-      // Redirect will be handled by the router
+      navigate('/dashboard');
     } catch (err) {
-      setError("Failed to create an account. Please try again.");
+      setError('Failed to create account');
     }
   };
 
   return (
-    <AuthLayout 
-      title="Create your account" 
-      subtitle="Start building beautiful forms today"
+    <AuthLayout
+      title="Create your account"
+      subtitle="Start building beautiful forms"
+      footer={
+        <div>
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            Sign in
+          </Link>
+        </div>
+      }
     >
       <form className="space-y-6" onSubmit={handleSubmit}>
         {error && (
@@ -41,17 +58,17 @@ export function SignupPage() {
 
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Full Name
+            Full name
           </label>
           <div className="mt-1">
-            <input
+            <Input
               id="name"
               name="name"
               type="text"
+              autoComplete="name"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
         </div>
@@ -61,7 +78,7 @@ export function SignupPage() {
             Email address
           </label>
           <div className="mt-1">
-            <input
+            <Input
               id="email"
               name="email"
               type="email"
@@ -69,7 +86,6 @@ export function SignupPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
         </div>
@@ -79,7 +95,7 @@ export function SignupPage() {
             Password
           </label>
           <div className="mt-1">
-            <input
+            <Input
               id="password"
               name="password"
               type="password"
@@ -87,25 +103,51 @@ export function SignupPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
         </div>
 
         <div>
-          <Button
-            type="submit"
-            className="w-full"
-            isLoading={isLoading}
-          >
-            Sign up
-          </Button>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            Confirm password
+          </label>
+          <div className="mt-1">
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div className="text-sm text-center">
-          <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-            Already have an account? Log in
-          </a>
+        <div className="flex items-center">
+          <input
+            id="terms"
+            name="terms"
+            type="checkbox"
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            required
+          />
+          <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+            I agree to the{' '}
+            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              Privacy Policy
+            </a>
+          </label>
+        </div>
+
+        <div>
+          <Button type="submit" className="w-full" isLoading={isLoading}>
+            Create account
+          </Button>
         </div>
       </form>
     </AuthLayout>
