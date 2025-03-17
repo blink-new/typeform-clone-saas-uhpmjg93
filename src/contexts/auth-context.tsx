@@ -1,93 +1,98 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '@/lib/types';
-import { mockUsers } from '@/lib/mock-data';
-import toast from 'react-hot-toast';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+// Define user type
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  plan: 'free' | 'pro' | 'business';
+}
+
+// Define auth context type
 interface AuthContextType {
   user: User | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
+// Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+// Auth provider props
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+// Create the auth provider component
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Check for saved user in localStorage
-    const savedUser = localStorage.getItem('formflow_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
+  // Mock login function
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For demo purposes, we'll just check if the email matches our mock user
-      const foundUser = mockUsers.find(u => u.email === email);
-      
-      if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem('formflow_user', JSON.stringify(foundUser));
-        toast.success('Logged in successfully!');
-      } else {
-        toast.error('Invalid credentials');
-      }
+      // Mock user data
+      setUser({
+        id: '1',
+        name: 'Demo User',
+        email,
+        plan: 'free'
+      });
     } catch (error) {
-      toast.error('Login failed');
-      console.error(error);
+      console.error('Login error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Mock signup function
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Create a new user (in a real app, this would be done on the server)
-      const newUser: User = {
-        id: `user-${Date.now()}`,
+      // Mock user data
+      setUser({
+        id: '1',
         name,
         email,
-        plan: 'free',
-      };
-      
-      setUser(newUser);
-      localStorage.setItem('formflow_user', JSON.stringify(newUser));
-      toast.success('Account created successfully!');
+        plan: 'free'
+      });
     } catch (error) {
-      toast.error('Signup failed');
-      console.error(error);
+      console.error('Signup error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('formflow_user');
-    toast.success('Logged out successfully');
   };
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    signup,
+    logout
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// Custom hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
